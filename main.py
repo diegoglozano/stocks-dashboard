@@ -13,7 +13,7 @@ from utils.helpers_data import (
 from utils.constants import MIN_DATE, MAX_DATE, HEIGHT, WIDTH
 
 
-st.title('Stocks')
+ticket_choice = st.sidebar.text_input('Choose a stock')
 min_date_choice = st.sidebar.date_input(
     label='Min date',
     value=MIN_DATE,
@@ -27,16 +27,17 @@ max_date_choice = st.sidebar.date_input(
     max_value=MAX_DATE
 )
 
-
-ticket_choice = st.text_input('Choose a stock')
-
 try:
-    prices = get_stock_prices(
+    prices, info = get_stock_prices(
         ticket_choice,
         min_date_choice,
         max_date_choice
     )
+
     if not prices.empty:
+        st.title(info['shortName'])
+        st.markdown(f'[{info["shortName"]}]({info["website"]})')
+        st.write(info['longBusinessSummary'])
         fig = make_subplots(
             rows=2, 
             cols=1, 
@@ -53,7 +54,8 @@ try:
                 open=prices['Open'],
                 high=prices['High'],
                 low=prices['Low'],
-                close=prices['Close']
+                close=prices['Close'],
+                name=f'{ticket_choice}'
             )
         )
         fig.add_trace(
@@ -66,10 +68,11 @@ try:
             col=1
         )
         fig.update_layout(
-            width=1000,
-            height=1000
+            width=WIDTH,
+            height=HEIGHT
         )
         st.plotly_chart(fig)
+
     else:
         if ticket_choice != '':
             st.write(f'Cannot find {ticket_choice}')
